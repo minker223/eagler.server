@@ -1,30 +1,30 @@
 #!/bin/bash
-# Docker-friendly Eaglercraft launcher
-set -e
+# main.sh - Start Cuberite + Bungee for Eaglercraft
 
-echo "[INFO] Starting Cuberite..."
+unset DISPLAY
+
+# Optional: set tmux mouse
+echo "set -g mouse on" > ~/.tmux.conf
+
+# Kill any previous session
+tmux kill-session -t server 2>/dev/null || true
+
+# Start Cuberite in a new tmux session
 cd ./Cuberite
-chmod +x ./Cuberite
-./Cuberite &
-CUBERITE_PID=$!
+chmod +x Cuberite
+tmux new -d -s server "./Cuberite"
 cd ..
 
-# Give Cuberite time to initialize (avoid connection refused)
+# Wait a few seconds for Cuberite to initialize
 sleep 5
 
-echo "[INFO] Starting Bungee/Waterfall..."
+# Start Bungee / Waterfall / EaglercraftXBungee
 cd ./Bungee
-java -Xmx512M -Xms512M -jar bungee.jar &
-BUNGEE_PID=$!
+tmux splitw -t server -h "java $JAVA_OPTS -jar bungee.jar; tmux kill-session -t server"
 cd ..
 
-# Handle container stop gracefully
-function cleanup {
-    echo "[INFO] Shutting down servers..."
-    kill $BUNGEE_PID $CUBERITE_PID || true
-    wait
-}
-trap cleanup SIGTERM SIGINT
+# Attach to tmux session so logs are visible in Railway console
+while tmux has-session -t server 2>/dev/null; do
+  tmux attach -t server
+done
 
-# Keep container alive as long as servers run
-wait
