@@ -1,26 +1,22 @@
-# Use a lightweight OpenJDK 17 image
+# Use a supported Java 17 image
 FROM eclipse-temurin:17-jdk
 
-# Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Copy all server files into the container
+# Copy all files
 COPY . /app
 
-# Make sure scripts are executable
+# Make main.sh and Cuberite executable
 RUN chmod +x ./main.sh ./Cuberite/Cuberite
 
-# Expose the ports your server uses
-# Cuberite WebSocket/game port
-EXPOSE 8081
-# Bungee/Waterfall port
-EXPOSE 6699
-# Caddy (HTTP) port (if needed)
-EXPOSE 80
-EXPOSE 443
+# Expose ports
+EXPOSE 8081  # Eaglercraft WebSocket / Bungee
+EXPOSE 25565 # Cuberite game backend
+EXPOSE 6699  # Optional Bungee relay
 
-# Optional: set Java memory limits
+# Optional: Java memory limits
 ENV JAVA_OPTS="-Xms512m -Xmx1g"
 
-# Start the server using the Docker-friendly main.sh
+# Start the server
 CMD ["./main.sh"]
