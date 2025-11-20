@@ -24,9 +24,9 @@ RUN chmod -R 777 /app/Cuberite/Plugins
 RUN apt-get update && apt-get install -y tmux && rm -rf /var/lib/apt/lists/*
 
 # Expose necessary ports
-EXPOSE 8081   # Eaglercraft WebSocket / Bungee
-EXPOSE 25565  # Cuberite game backend
-EXPOSE 6699   # Optional Bungee relay
+EXPOSE 8081
+EXPOSE 25565
+EXPOSE 6699
 
 # Optional: Java memory limits
 ENV JAVA_OPTS="-Xms512m -Xmx1g"
