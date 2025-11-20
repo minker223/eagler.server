@@ -29,7 +29,7 @@ EXPOSE 25565
 EXPOSE 6699
 
 # Optional: Java memory limits
-ENV JAVA_OPTS="-Xms512m -Xmx1g"
+ENV JAVA_OPTS="-Xms1024m -Xmx1024m"
 
 # Start the server
 CMD ["./main.sh"]
