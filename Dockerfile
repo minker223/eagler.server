@@ -17,13 +17,16 @@ RUN mkdir -p \
     /app/Cuberite/world_the_end \
     && chmod -R 777 /app/Cuberite/world*
 
-# Ensure Plugins folder is writable (folders already exist)
+# Ensure Plugins folder is writable
 RUN chmod -R 777 /app/Cuberite/Plugins
 
+# Install tmux (required by main.sh)
+RUN apt-get update && apt-get install -y tmux && rm -rf /var/lib/apt/lists/*
+
 # Expose necessary ports
-EXPOSE 8081
-EXPOSE 25565
-EXPOSE 6699
+EXPOSE 8081   # Eaglercraft WebSocket / Bungee
+EXPOSE 25565  # Cuberite game backend
+EXPOSE 6699   # Optional Bungee relay
 
 # Optional: Java memory limits
 ENV JAVA_OPTS="-Xms512m -Xmx1g"
