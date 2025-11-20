@@ -1,4 +1,5 @@
 #!/bin/bash
+# Docker-friendly Eaglercraft launcher
 set -e
 
 echo "[INFO] Starting Cuberite..."
@@ -8,16 +9,22 @@ chmod +x ./Cuberite
 CUBERITE_PID=$!
 cd ..
 
-# Give Cuberite some time to start
+# Give Cuberite time to initialize (avoid connection refused)
 sleep 5
 
-echo "[INFO] Starting Bungee..."
+echo "[INFO] Starting Bungee/Waterfall..."
 cd ./Bungee
-java -Xmx128M -Xms128M -jar bungee.jar &
+java -Xmx512M -Xms512M -jar bungee.jar &
 BUNGEE_PID=$!
 cd ..
 
-# Trap signals to stop both
-trap "kill $CUBERITE_PID $BUNGEE_PID; wait" SIGINT SIGTERM
+# Handle container stop gracefully
+function cleanup {
+    echo "[INFO] Shutting down servers..."
+    kill $BUNGEE_PID $CUBERITE_PID || true
+    wait
+}
+trap cleanup SIGTERM SIGINT
 
+# Keep container alive as long as servers run
 wait
