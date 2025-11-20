@@ -1,32 +1,43 @@
 #!/bin/bash
+# Docker-friendly Eaglercraft Server Launcher
 
-# Eaglercraft Server
-# Thrown together in a few days by TheCerealist
-# Go love ayun, he gave me the idea.
+set -e
 
+# Stop any DISPLAY (headless)
 unset DISPLAY
 
-echo "set -g mouse on" > ~/.tmux.conf
+echo "[INFO] Starting Eaglercraft Server in Docker..."
 
-tmux kill-session -t server
-# Restart Caddyserver, portforwarding 8081 for Eaglercraft.
+# Start Caddy in the background but keep logs to stdout
+echo "[INFO] Starting Caddy..."
 cd ./Caddy
-caddy stop
-caddy start --config ./Caddyfile > /dev/null 2>&1
+caddy stop || true
+caddy start --config ./Caddyfile &
+CADDY_PID=$!
 cd ..
-# Run Cuberite Server
+
+# Start Cuberite server in the foreground
+echo "[INFO] Starting Cuberite..."
 cd ./Cuberite
 chmod +x Cuberite
-tmux new -d -s server "./Cuberite"
+./Cuberite &
+CUBERITE_PID=$!
 cd ..
-# Run Waterfall/Bungeecord
+
+# Start Bungee/Waterfall in the foreground
+echo "[INFO] Starting Bungee..."
 cd ./Bungee
-tmux splitw -t server -h "java -Xmx128M -Xms128M -jar bungee.jar; tmux kill-session -t server"
+java -Xmx128M -Xms128M -jar bungee.jar &
+BUNGEE_PID=$!
 cd ..
 
-while tmux has-session -t server
-do
-  tmux a -t server
-done
+# Function to shut down everything on container stop
+function cleanup {
+    echo "[INFO] Shutting down servers..."
+    kill $BUNGEE_PID $CUBERITE_PID $CADDY_PID || true
+    wait
+}
+trap cleanup SIGTERM SIGINT
 
-caddy stop
+# Wait for all background processes
+wait
