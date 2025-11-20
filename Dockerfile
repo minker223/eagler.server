@@ -1,17 +1,22 @@
-# Use a lightweight OpenJDK image
-FROM openjdk:17-jdk-slim
+# Use a lightweight Java image
+FROM openjdk:17-jdk‑slim
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy all files into the container
+# Copy everything from your repo into the container
 COPY . /app
 
-# Make scripts executable
-RUN chmod +x main.sh run.sh
+# Make sure the startup script(s) are executable
+RUN chmod +x ./main.sh ./run.sh || true
 
-# Expose the ports your server uses
-EXPOSE 8081 6699
+# Expose the ports your server uses (adjust if different)
+# WebSocket / game port (8081) and relay port (6699)
+EXPOSE 8081
+EXPOSE 6699
 
-# Run the main server script
+# Optionally set environment variable for Java memory etc
+ENV JAVA_OPTS="-Xms512m -Xmx1g"
+
+# Start the server via the script
 CMD ["./main.sh"]
